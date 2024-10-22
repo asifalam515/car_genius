@@ -48,7 +48,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: { price: 1, service_id: 1, title: 1 },
+        projection: { price: 1, service_id: 1, title: 1, img: 1 },
       };
 
       const result = await serviceCollection.findOne(query, options);
@@ -60,6 +60,19 @@ async function run() {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
       console.log(booking);
+      res.send(result);
+    });
+
+    // sum data
+    app.get("/bookings", async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = {
+          email: req.query.email,
+        };
+      }
+      const result = await bookingCollection.find(query).toArray();
+
       res.send(result);
     });
   } finally {
