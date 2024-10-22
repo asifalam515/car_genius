@@ -5,7 +5,7 @@ import { AuthContext } from "../../../providers/AuthProviders";
 import Swal from "sweetalert2";
 
 const Navbar = () => {
-  const { logOut } = useContext(AuthContext);
+  const { logOut, user } = useContext(AuthContext);
   const handleLogOut = () => {
     logOut().then(() => {
       Swal.fire("User Logged OUt");
@@ -61,9 +61,15 @@ const Navbar = () => {
         <ul className="menu menu-horizontal px-1">{navLinks}</ul>
       </div>
       <div className="navbar-end">
-        <button onClick={handleLogOut} className="btn btn-primary mx-2">
-          LogOut
-        </button>
+        {user ? (
+          <button onClick={handleLogOut} className="btn btn-primary mx-2">
+            LogOut
+          </button>
+        ) : (
+          <Link to="/login" className="btn btn-primary mx-2">
+            LogIn
+          </Link>
+        )}
         <button className="btn btn-outline btn-warning">Appointment</button>
       </div>
     </div>
