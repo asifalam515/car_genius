@@ -48,12 +48,35 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: { price: 1, service_id: 1, title: 1, img: 1 },
+        projection: { price: 1, service_id: 1, title: 1, img: 1, date: 1 },
       };
 
       const result = await serviceCollection.findOne(query, options);
       res.send(result);
     });
+    // delete booking api
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
+    // update booking
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedBooking = req.body;
+      const updateDoc = {
+        $set: {
+          status: updatedBooking.status,
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updateDoc);
+
+      console.log(updatedBooking);
+      res.send(result);
+    });
+
     // bookings related API
     // book for a service
     app.post("/bookings", async (req, res) => {

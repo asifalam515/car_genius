@@ -19,6 +19,8 @@ const BookService = () => {
       service: title,
       service_id: _id,
       img,
+      price,
+      date,
     };
     fetch(`http://localhost:5000/bookings`, {
       method: "POST",
