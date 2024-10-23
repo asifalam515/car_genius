@@ -2,9 +2,13 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 5000;
 var cors = require("cors");
+var cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 // middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 // car_genius
 // kHcXoSK0U46oipcO
@@ -38,7 +42,22 @@ async function run() {
     const serviceCollection = database.collection("services");
     const bookingCollection = database.collection("bookings");
 
-    // api
+    // auth related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log(process.env.ACCESS_TOKEN);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "1h",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "none",
+        })
+        .send({ success: true });
+    });
+    // services related api
     app.get("/services", async (req, res) => {
       const cursor = await serviceCollection.find().toArray();
       res.send(cursor);
@@ -72,11 +91,8 @@ async function run() {
         },
       };
       const result = await bookingCollection.updateOne(filter, updateDoc);
-
-      console.log(updatedBooking);
       res.send(result);
     });
-
     // bookings related API
     // book for a service
     app.post("/bookings", async (req, res) => {

@@ -43,22 +43,19 @@ const Bookings = () => {
     fetch(`http://localhost:5000/bookings/${id}`, {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ status: "confirm" }),
     })
       .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        if (data.modifiedCount > 0) {
-          // update the state with new data
-          // only one's data has been changed rest of the things are same
-          const remaining = bookings.filter((booking) => booking._id !== id);
-          const updated = bookings.filter((booking) => booking._id === id);
-          updated.status = "confirm";
-          const newBookings = [updated, ...remaining];
-          setBookings(newBookings);
-        }
+      .then((res) => {
+        console.log(res);
+        // update state here
+        const remaining = bookings.filter((booking) => booking._id !== id);
+        const updatedBooking = bookings.find((booking) => booking._id === id);
+        updatedBooking.status = "confirm";
+        const newBookings = [updatedBooking, ...remaining];
+        setBookings(newBookings);
       });
   };
   const url = `http://localhost:5000/bookings?email=${user?.email}`;
