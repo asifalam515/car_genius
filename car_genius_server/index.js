@@ -4,12 +4,43 @@ const port = process.env.PORT || 5000;
 var cors = require("cors");
 var cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+
 require("dotenv").config();
+
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
+// custom middle ware
+const logger = (req, res, next) => {
+  console.log("its our custom middleware ", req.originalUrl);
+  next();
+};
+
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  console.log("value of token in middleware", token);
+  if (!token) {
+    return res.status(401).send({ message: "forbidden" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+    // error
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ message: "wrong token!" });
+    }
+    // valid:if token is valid it would be decoded
+    console.log("value in the token", decoded);
+    req.user = decoded;
+    next();
+  });
+};
 // car_genius
 // kHcXoSK0U46oipcO
 
@@ -43,22 +74,21 @@ async function run() {
     const bookingCollection = database.collection("bookings");
 
     // auth related api
-    app.post("/jwt", async (req, res) => {
+    app.post("/jwt", logger, async (req, res) => {
       const user = req.body;
-      console.log(process.env.ACCESS_TOKEN);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: "1h",
       });
       res
         .cookie("token", token, {
           httpOnly: true,
+
           secure: false,
-          sameSite: "none",
         })
         .send({ success: true });
     });
     // services related api
-    app.get("/services", async (req, res) => {
+    app.get("/services", logger, async (req, res) => {
       const cursor = await serviceCollection.find().toArray();
       res.send(cursor);
     });
@@ -103,7 +133,9 @@ async function run() {
     });
 
     // sum data
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", verifyToken, logger, async (req, res) => {
+      // console.log("ttt token", req.cookies.token);
+      console.log("user in the  valid token", req.query);
       let query = {};
       if (req.query?.email) {
         query = {

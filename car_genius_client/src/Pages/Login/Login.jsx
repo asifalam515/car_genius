@@ -7,7 +7,7 @@ import axios from "axios";
 const Login = () => {
   const { loggedInUser } = useContext(AuthContext);
   const location = useLocation();
-  console.log(location);
+
   const navigate = useNavigate();
   const handleLogin = (e) => {
     e.preventDefault();
@@ -21,9 +21,16 @@ const Login = () => {
         console.log(loggedInUser);
         const user = { email };
         // work for token
-        axios.post("http://localhost:5000/jwt", user).then((res) => {
-          console.log(res.data);
-        });
+        axios
+          .post("http://localhost:5000/jwt", user, {
+            withCredentials: true,
+          })
+          .then((res) => {
+            console.log(res.data);
+            if (res.data.success) {
+              navigate(location?.state ? location?.state : "/");
+            }
+          });
         Swal.fire({
           position: "top",
           icon: "success",
